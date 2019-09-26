@@ -40,6 +40,7 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
@@ -682,7 +683,7 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
             indent();
             writer.write("<");
             writer.write(qName);
-            writeNamespaces();
+            attributes = writeNamespaces(attributes);
             writeAttributes(attributes);
             writer.write(">");
             ++indentLevel;
@@ -1178,7 +1179,7 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
      * @throws IOException
      *             DOCUMENT ME!
      */
-    protected void writeNamespaces() throws IOException {
+    protected Attributes writeNamespaces(Attributes atts) throws IOException {
         if (namespacesMap != null) {
             for (Iterator iter = namespacesMap.entrySet().iterator(); iter
                     .hasNext();) {
@@ -1186,11 +1187,30 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
                 String prefix = (String) entry.getKey();
                 String uri = (String) entry.getValue();
                 writeNamespace(prefix, uri);
+				atts = removeNamespace(prefix, uri, atts);
             }
 
             namespacesMap = null;
         }
+		
+		return atts;
     }
+	
+	protected Attributes removeNamespace(String prefix, String uri, Attributes atts)
+	{
+		int idx = atts.getIndex("xmlns:" + prefix);
+		if (idx != -1) {
+			AttributesImpl modify;
+			if ((atts instanceof AttributesImpl))
+				modify = (AttributesImpl)atts;
+			else
+				modify = new AttributesImpl(atts);
+			
+			modify.removeAttribute(idx);
+			atts = modify;
+		}
+		return atts;
+	}
 
     /**
      * Writes the SAX namepsaces
@@ -1205,6 +1225,8 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
     protected void writeNamespace(String prefix, String uri) 
             throws IOException {
         if ((prefix != null) && (prefix.length() > 0)) {
+			if ("xmlns".equalsIgnoreCase(prefix))
+				return;
             writer.write(" xmlns:");
             writer.write(prefix);
             writer.write("=\"");
@@ -1259,12 +1281,12 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
 
                     writer.write(token);
                     lastOutputNodeType = Node.TEXT_NODE;
-                    lastChar = token.charAt(token.length() - 1);
+                    //lastChar = token.charAt(token.length() - 1);
                 }
             } else {
                 lastOutputNodeType = Node.TEXT_NODE;
                 writer.write(text);
-                lastChar = text.charAt(text.length() - 1);
+                //lastChar = text.charAt(text.length() - 1);
             }
         }
     }
@@ -1289,7 +1311,7 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
 
             lastOutputNodeType = Node.TEXT_NODE;
             writer.write(text);
-            lastChar = text.charAt(text.length() - 1);
+            //lastChar = text.charAt(text.length() - 1);
         }
     }
 
@@ -1543,10 +1565,10 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
      */
     protected void writePrintln() throws IOException {
         if (format.isNewlines()) {
-            String seperator = format.getLineSeparator();
-            if (lastChar != seperator.charAt(seperator.length() - 1)) {
+            //String seperator = format.getLineSeparator();
+            //if (lastChar != seperator.charAt(seperator.length() - 1)) {
                 writer.write(format.getLineSeparator());
-            }
+            //}
         }
     }
 
