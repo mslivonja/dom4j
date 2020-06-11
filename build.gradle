@@ -14,7 +14,15 @@ tasks.withType(JavaCompile) + tasks.withType(Javadoc) {
 }
 
 repositories {
-    mavenCentral()
+    if( project.hasProperty('artifactory_url')){
+	maven {
+	  url artifactory_url
+	}
+	println 'Using local Artifactory repository'
+    }else{
+    	mavenCentral()
+    	println 'Using maven central repository'
+    }
 }
 
 dependencies {
