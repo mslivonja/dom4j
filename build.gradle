@@ -44,6 +44,13 @@ dependencies {
     )
 }
 
+if(project.hasProperty('java_home')){	
+	compileJava{
+		options.fork = true
+		options.forkOptions.javaHome = new File(java_home)
+	}
+}
+
 sourceSets {
     test {
         compileClasspath += configurations.compileOnly
