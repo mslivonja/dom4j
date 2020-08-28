@@ -56,6 +56,9 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 publishing {
     publications {
         mavenJava(MavenPublication) {
+			groupId = group
+			artifactId = archivesBaseName
+			
             from components.java
 
             artifact sourcesJar {
